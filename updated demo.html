@@ -1,0 +1,1557 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpiroSoft ERP V13</title>
+    <style>
+        :root {
+            --m-teal: #008080; --m-red: #e74c3c; --m-orange: #f39c12; --m-blue: #2980b9;
+            --m-pink: #d81b60; --m-black: #2c3e50; --m-purp: #8e44ad; --m-green: #27ae60;
+            --bg-orange: #ffedd5; --text-dark: #333; --low-stock: #fff1f0;
+        }
+        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; font-weight: 700; }
+        body { margin: 0; background: #f5f5f5; color: var(--text-dark); font-size: 13px; }
+
+        /* LOGIN PAGE STYLES */
+        .auth-wrapper { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #008080 0%, #006666 100%); }
+        .auth-wrapper.hidden { display: none; }
+        .auth-container { background: white; padding: 40px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.2); width: 100%; max-width: 450px; }
+        .auth-header { text-align: center; margin-bottom: 30px; }
+        .auth-logo { font-size: 48px; margin-bottom: 10px; }
+        .auth-title { font-size: 24px; color: var(--m-teal); font-weight: 900; margin: 0; }
+        .auth-subtitle { font-size: 12px; color: #999; margin-top: 5px; }
+        
+        .auth-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #eee; }
+        .auth-tab { flex: 1; padding: 10px; text-align: center; cursor: pointer; border: none; background: none; font-weight: 900; color: #999; border-bottom: 3px solid transparent; transition: 0.2s; }
+        .auth-tab.active { color: var(--m-teal); border-bottom-color: var(--m-teal); }
+        .auth-form { display: none; }
+        .auth-form.active { display: block; }
+        
+        .form-group { margin-bottom: 16px; }
+        .form-group label { display: block; font-size: 11px; font-weight: 900; margin-bottom: 6px; color: #222; text-transform: uppercase; }
+        .form-group input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 12px; outline: none; }
+        .form-group input:focus { border-color: var(--m-teal); box-shadow: 0 0 5px rgba(0, 128, 128, 0.3); }
+        .password-input-group { position: relative; }
+        .toggle-password { position: absolute; right: 10px; top: 28px; background: none; border: none; cursor: pointer; font-size: 16px; }
+        
+        .remember-me { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
+        .remember-me input[type="checkbox"] { width: auto; cursor: pointer; }
+        .remember-me label { margin: 0; font-size: 11px; cursor: pointer; }
+        
+        .auth-btn { width: 100%; padding: 12px; background: var(--m-teal); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 900; font-size: 12px; text-transform: uppercase; }
+        .auth-btn:hover { background: #006666; }
+        
+        .auth-links { display: flex; gap: 10px; margin-bottom: 16px; }
+        .auth-links a { flex: 1; text-align: center; font-size: 11px; color: var(--m-teal); text-decoration: none; cursor: pointer; border: 1px solid var(--m-teal); padding: 8px; border-radius: 4px; transition: 0.2s; }
+        .auth-links a:hover { background: #e8f8f8; }
+        
+        .error-message { color: var(--m-red); font-size: 11px; margin-bottom: 12px; text-align: center; display: none; }
+        .success-message { color: #27ae60; font-size: 11px; margin-bottom: 12px; text-align: center; display: none; }
+        
+        .policy-links { display: flex; gap: 10px; justify-content: center; margin-top: 15px; flex-wrap: wrap; }
+        .policy-links a { font-size: 10px; color: var(--m-teal); text-decoration: none; cursor: pointer; }
+        .policy-links a:hover { text-decoration: underline; }
+
+        /* MAIN APP STYLES */
+        .app-wrapper { display: flex; min-height: 100vh; flex-direction: column; }
+        .app-wrapper.hidden { display: none; }
+
+        .header-top { background: var(--m-teal); padding: 12px 20px; display: flex; justify-content: space-between; align-items: center; color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .header-top-left { display: flex; align-items: center; gap: 15px; }
+        .logo { font-size: 20px; font-weight: 900; letter-spacing: 1px; }
+        .header-search { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); padding: 8px 12px; border-radius: 20px; color: white; width: 250px; }
+        .header-search::placeholder { color: rgba(255,255,255,0.7); }
+        .logout-btn { background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); color: white; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-weight: 900; font-size: 11px; transition: 0.2s; }
+        .logout-btn:hover { background: rgba(255,255,255,0.3); }
+        
+        .main-container { display: flex; gap: 0; height: calc(100vh - 60px); }
+        
+        .left-sidebar-main { width: 200px; background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%); border-right: 2px solid #1a252f; overflow-y: auto; padding: 15px 0; box-shadow: 2px 0 15px rgba(0,0,0,0.3); display: flex; flex-direction: column; }
+        .sidebar-content { flex: 1; overflow-y: auto; }
+        .sidebar-section { margin-bottom: 15px; }
+        .sidebar-section-title { padding: 8px 15px; color: #95a5a6; font-size: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 900; }
+        .sidebar-item { padding: 10px 15px; color: #ecf0f1; cursor: pointer; font-size: 11px; transition: all 0.2s ease; border-left: 4px solid transparent; display: flex; align-items: center; gap: 10px; }
+        .sidebar-item:hover { background: rgba(0, 128, 128, 0.2); border-left-color: var(--m-teal); padding-left: 13px; color: #00d4d4; }
+        .sidebar-item.active { background: var(--m-teal); border-left-color: white; color: white; border-radius: 0 20px 20px 0; margin-right: 8px; }
+        .sidebar-icon { font-size: 14px; min-width: 16px; }
+
+        /* SIDEBAR FOOTER */
+        .sidebar-footer { padding: 0 10px 15px 10px; border-top: 1px solid rgba(255,255,255,0.1); }
+        .sidebar-footer-btn { background: var(--m-teal); border: none; color: white; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: 900; font-size: 11px; width: 100%; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .sidebar-footer-btn:hover { background: #006666; }
+
+        .container { flex: 1; padding: 20px; overflow-y: auto; background: #f5f5f5; }
+        .view-section { display: none !important; }
+        .view-section.active { display: block !important; }
+
+        .dashboard-header { margin-bottom: 25px; text-align: center; }
+        .business-info-display { font-size: 28px; color: var(--m-teal); font-weight: 900; margin-bottom: 20px; padding: 15px; background: #e8f8f8; border-left: 4px solid var(--m-teal); border-radius: 4px; }
+        .dashboard-title { font-size: 24px; color: #2c3e50; margin: 0 0 8px 0; font-weight: 900; }
+
+        .dashboard-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-bottom: 25px; }
+        .metric-card { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); border-left: 5px solid; }
+        .metric-card:hover { transform: translateY(-5px); box-shadow: 0 8px 16px rgba(0,0,0,0.12); }
+        .metric-card.teal { border-left-color: #008080; }
+        .metric-card.orange { border-left-color: #f39c12; }
+        .metric-card.blue { border-left-color: #2980b9; }
+        .metric-card.green { border-left-color: #27ae60; }
+        .metric-card.purple { border-left-color: #8e44ad; }
+        .metric-card.red { border-left-color: #e74c3c; }
+        .metric-value { font-size: 24px; font-weight: 900; color: #2c3e50; }
+
+        .table-section { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .table-title { font-size: 14px; font-weight: 900; color: #2c3e50; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; font-size: 11px; }
+        th { text-align: left; background: #f8f9fa; padding: 10px; border: 1px solid #ecf0f1; font-size: 9px; color: #2c3e50; font-weight: 900; text-transform: uppercase; }
+        td { padding: 10px; border: 1px solid #ecf0f1; background: white; font-weight: 600; font-size: 11px; }
+
+        /* INVENTORY STYLES */
+        .inventory-wrapper { display: flex; width: 100%; gap: 15px; }
+        .left-sidebar-inv { flex: 0 0 280px; background: white; border: 1px solid #ddd; border-radius: 4px; overflow-y: auto; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .form-section { background: white; border: 1px solid #ddd; border-radius: 4px; padding: 0; margin-bottom: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        .form-section-tabs { display: flex; gap: 0; background: var(--m-teal); border-radius: 4px 4px 0 0; }
+        .form-section-tab { padding: 8px 12px; color: white; cursor: pointer; font-size: 10px; font-weight: 900; border-bottom: 3px solid transparent; flex: 1; text-align: center; transition: 0.2s; }
+        .form-section-tab.active { background: var(--m-teal); border-bottom-color: white; }
+        .form-section-tab:hover { opacity: 0.8; }
+        .form-subsection { display: none; }
+        .form-subsection.active { display: block; }
+        .form-section-content { padding: 10px; }
+        .form-subsection-title { background: var(--m-teal); color: white; padding: 8px 10px; margin: -10px -10px 10px -10px; font-size: 11px; font-weight: 900; text-transform: uppercase; }
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px; }
+        .form-grid.full { grid-template-columns: 1fr; }
+        label { display: block; font-size: 10px; font-weight: 900; margin-bottom: 3px; color: #222; }
+        input, select { width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 3px; font-size: 10px; outline: none; }
+        input:focus, select:focus { border-color: var(--m-teal); box-shadow: 0 0 5px rgba(0, 128, 128, 0.3); }
+        .manage-link { color: #2980b9; cursor: pointer; float: right; font-size: 9px; text-decoration: underline; font-weight: 900; }
+        .manage-link:hover { color: var(--m-teal); }
+
+        .stock-available-panel, .history-panel { background: white; border: 1px solid #ddd; border-radius: 4px; padding: 12px; margin-bottom: 15px; overflow-x: auto; }
+        .table-header-row { background: #333; color: white; padding: 8px; margin: -12px -12px 12px -12px; font-size: 10px; text-transform: uppercase; display: flex; justify-content: space-between; font-weight: 900; }
+        
+        .expired-item { background-color: #ffe5e5 !important; }
+        .expiring-item { background-color: #fffacd !important; }
+        .normal-item { background-color: #e8f5e9 !important; }
+
+        .btn { padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; color: white; text-transform: uppercase; font-size: 8px; font-weight: 900; }
+        .btn-teal { background: var(--m-teal); width: 100%; margin-top: 8px; padding: 10px; }
+        .btn-pdf { background: #c0392b; }
+        .btn-save-disk { background: #27ae60; }
+        .btn-reset { background: #444; }
+        .btn-edit { background: #3b82f6; padding: 5px 8px; font-size: 7px; }
+        .btn-delete { background: var(--m-red); padding: 5px 8px; font-size: 7px; }
+
+        .profit-calc { background: #f0fdfa; padding: 8px; border: 1px solid var(--m-teal); border-radius: 4px; margin-bottom: 8px; font-size: 9px; font-weight: 900; }
+        .profit-calc b { color: var(--m-teal); }
+        .profit-calc div { margin-bottom: 4px; }
+
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
+        .modal.active { display: flex; }
+        .modal-box { background: white; padding: 20px; border-radius: 8px; width: 500px; max-height: 80vh; overflow-y: auto; box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .modal-header { font-size: 16px; font-weight: 900; color: var(--m-teal); margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; color: #999; }
+
+        .policy-modal { width: 600px; }
+        .policy-content { max-height: 60vh; overflow-y: auto; padding: 15px 0; line-height: 1.6; }
+        .policy-section { margin-bottom: 15px; }
+        .policy-section h3 { color: var(--m-teal); font-size: 13px; margin: 10px 0 5px 0; }
+        .policy-section p { font-size: 11px; color: #555; margin: 5px 0; }
+        .policy-section ul { font-size: 11px; color: #555; margin: 5px 0 5px 20px; }
+        .policy-section li { margin: 3px 0; }
+
+        .history-container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+        .history-header { display: flex; gap: 10px; margin-bottom: 15px; }
+        .history-btn { background: var(--m-teal); color: white; padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: 900; font-size: 11px; }
+        .history-btn:hover { background: #006666; }
+        .history-btn.danger { background: var(--m-red); }
+
+        .settings-container { background: white; padding: 20px; border-radius: 8px; }
+        .settings-tabs { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid #ddd; }
+        .settings-tab { padding: 10px 20px; cursor: pointer; border: none; background: none; font-size: 12px; font-weight: 900; color: #666; border-bottom: 3px solid transparent; }
+        .settings-tab.active { color: var(--m-teal); border-bottom-color: var(--m-teal); }
+        .settings-tab-content { display: none; }
+        .settings-tab-content.active { display: block; }
+        .settings-section { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #eee; }
+        .settings-section h3 { font-size: 14px; color: var(--m-teal); margin-top: 0; }
+        .settings-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px; }
+        .settings-input-group label { font-size: 11px; display: block; margin-bottom: 6px; }
+        .settings-input-group input { width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }
+        .settings-button { background: var(--m-teal); color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: 900; }
+        .settings-button:hover { background: #006666; }
+
+        .coming-soon-container { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 400px; background: white; border-radius: 8px; padding: 40px; }
+        .coming-soon-icon { font-size: 50px; margin-bottom: 20px; opacity: 0.5; }
+
+        .search-bar { width: 100%; padding: 8px; border: 1px solid var(--m-teal); border-radius: 3px; margin-bottom: 8px; font-size: 10px; font-weight: 900; }
+
+        /* CALCULATOR MODAL STYLES */
+        .calculator-modal { width: 320px; }
+        .calc-display { background: #1a1a1a; color: #00ff00; padding: 12px; border-radius: 3px; border: 2px solid var(--m-teal); text-align: right; font-size: 16px; font-weight: 900; margin-bottom: 10px; overflow: hidden; word-wrap: break-word; min-height: 40px; display: flex; align-items: center; justify-content: flex-end; }
+        .calc-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+        .calc-btn { padding: 10px; border: 1px solid #555; border-radius: 4px; background: #2c3e50; color: #ecf0f1; cursor: pointer; font-size: 12px; font-weight: 900; transition: 0.2s; }
+        .calc-btn:hover { background: var(--m-teal); color: white; }
+        .calc-btn.operator { background: #f39c12; color: white; }
+        .calc-btn.operator:hover { background: #e67e22; }
+        .calc-btn.equals { background: #27ae60; color: white; grid-column: span 2; }
+        .calc-btn.equals:hover { background: #229954; }
+        .calc-btn.clear { background: #e74c3c; color: white; grid-column: span 2; }
+        .calc-btn.clear:hover { background: #c0392b; }
+
+        .no-print { display: block; }
+        @media print {
+            .no-print { display: none !important; }
+            .header-top { display: none !important; }
+            .left-sidebar-main { display: none !important; }
+            .receipt-no-print { display: none !important; }
+            #itemsTable { font-size: 10px !important; }
+            #itemsTable td { padding: 5px !important; }
+            #itemsTable th:last-child { display: none !important; }
+            #itemsTable td:last-child { display: none !important; }
+            .pos-right { width: 100% !important; max-width: 100% !important; }
+            body { margin: 0; padding: 0; }
+            .pos-container { display: block !important; gap: 0 !important; height: auto !important; }
+            .pos-left { display: none !important; }
+            .pos-right { background: white !important; padding: 10px !important; overflow: visible !important; }
+            .receipt-details-print { display: block !important; font-weight: bold !important; }
+        }
+
+        .receipt-header-info { font-size: 8px; line-height: 1.2; margin-bottom: 8px; }
+        .receipt-header-info div { margin-bottom: 3px; }
+        .receipt-divider { border-top: 1px dashed #000; margin: 8px 0; }
+        .receipt-details-print { display: none; font-size: 8px; font-weight: bold; margin-bottom: 3px; }
+        
+        .pos-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; height: 85vh; }
+        .pos-left { background: white; border-radius: 8px; padding: 15px; overflow-y: auto; border: 1px solid #ddd; }
+        .pos-right { background: white; border-radius: 8px; padding: 15px; overflow-y: auto; border: 1px solid #ddd; max-height: 85vh; }
+        .pos-table-wrapper { max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 4px; }
+        .pos-table-wrapper table { font-size: 10px; }
+        .pos-table-wrapper tbody tr { border-bottom: 1px solid #eee; }
+
+        .pos-search-reset { display: flex; gap: 8px; margin-bottom: 8px; }
+        .pos-search-reset input { flex: 1; }
+        .pos-search-reset button { width: auto; padding: 8px 12px; }
+
+        .stock-search-reset { display: flex; gap: 8px; margin-bottom: 8px; }
+        .stock-search-reset input { flex: 1; }
+        .stock-search-reset button { width: auto; padding: 8px 12px; }
+    </style>
+</head>
+<body>
+
+<!-- AUTH PAGE -->
+<div class="auth-wrapper" id="authWrapper">
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="auth-logo">🏥</div>
+            <h1 class="auth-title">SPIROSOFT ERP</h1>
+            <p class="auth-subtitle">Pharmacy Management System V13</p>
+        </div>
+        
+        <div class="auth-tabs">
+            <button class="auth-tab active" onclick="switchAuthTab('login')">🔓 LOGIN</button>
+            <button class="auth-tab" onclick="switchAuthTab('signup')">📝 SIGN UP</button>
+        </div>
+
+        <!-- LOGIN FORM -->
+        <form id="loginForm" class="auth-form active" onsubmit="handleLogin(event)">
+            <div id="loginError" class="error-message"></div>
+            
+            <div class="form-group">
+                <label>👤 Username</label>
+                <input type="text" id="loginUsername" placeholder="Enter your username" required>
+            </div>
+            
+            <div class="form-group password-input-group">
+                <label>🔐 Password</label>
+                <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                <button type="button" class="toggle-password" onclick="toggleLoginPassword()">👁️</button>
+            </div>
+            
+            <div class="remember-me">
+                <input type="checkbox" id="rememberMe">
+                <label for="rememberMe">Remember me</label>
+            </div>
+            
+            <button type="submit" class="auth-btn">🔓 LOGIN</button>
+        </form>
+
+        <!-- SIGNUP FORM -->
+        <form id="signupForm" class="auth-form" onsubmit="handleSignup(event)">
+            <div id="signupError" class="error-message"></div>
+            <div id="signupSuccess" class="success-message"></div>
+            
+            <div class="form-group">
+                <label>📧 Email Address</label>
+                <input type="email" id="signupEmail" placeholder="your@email.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label>👤 Username</label>
+                <input type="text" id="signupUsername" placeholder="Choose a username" required>
+            </div>
+            
+            <div class="form-group password-input-group">
+                <label>🔐 Password</label>
+                <input type="password" id="signupPassword" placeholder="Create password" required>
+                <button type="button" class="toggle-password" onclick="toggleSignupPassword()">👁️</button>
+            </div>
+            
+            <div class="form-group password-input-group">
+                <label>🔐 Confirm Password</label>
+                <input type="password" id="confirmPassword" placeholder="Confirm password" required>
+                <button type="button" class="toggle-password" onclick="toggleConfirmPassword()">👁️</button>
+            </div>
+            
+            <button type="submit" class="auth-btn">📝 CREATE ACCOUNT</button>
+        </form>
+
+        <div class="auth-links">
+            <a onclick="showForgotPasswordModal()">🔑 Forgot Password?</a>
+        </div>
+
+        <div class="policy-links">
+            <a onclick="showPolicy('privacy')">🔒 Privacy Policy</a>
+            <a onclick="showPolicy('terms')">📄 Terms of Use</a>
+        </div>
+    </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app-wrapper hidden" id="appWrapper">
+    <header class="header-top no-print">
+        <div class="header-top-left">
+            <div class="logo">🏥 SPIROSOFT ERP</div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <span id="loggedInUser" style="font-size: 11px;"></span>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="left-sidebar-main no-print">
+            <div class="sidebar-content">
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Features</div>
+                    <div class="sidebar-item active" onclick="showView('dash-view', this)">
+                        <span class="sidebar-icon">📊</span>
+                        <span>Dashboard</span>
+                    </div>
+                    <div class="sidebar-item" onclick="showView('inv-view', this)">
+                        <span class="sidebar-icon">📦</span>
+                        <span>Inventory</span>
+                    </div>
+                    <div class="sidebar-item" onclick="showView('pos-view', this)">
+                        <span class="sidebar-icon">💳</span>
+                        <span>POS Sell</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Tools</div>
+                    <div class="sidebar-item" onclick="showView('history-view', this)">
+                        <span class="sidebar-icon">📋</span>
+                        <span>History</span>
+                    </div>
+                    <div class="sidebar-item" onclick="showView('backup-view', this)">
+                        <span class="sidebar-icon">💾</span>
+                        <span>Backup</span>
+                    </div>
+                    <div class="sidebar-item" onclick="openCalculator()">
+                        <span class="sidebar-icon">🧮</span>
+                        <span>Calculator</span>
+                    </div>
+                </div>
+
+                <div class="sidebar-section">
+                    <div class="sidebar-section-title">Account</div>
+                    <div class="sidebar-item" onclick="showView('settings-view', this)">
+                        <span class="sidebar-icon">⚙️</span>
+                        <span>Settings</span>
+                    </div>
+                    <div class="sidebar-item" onclick="showPolicy('privacy')">
+                        <span class="sidebar-icon">🔒</span>
+                        <span>Privacy Policy</span>
+                    </div>
+                    <div class="sidebar-item" onclick="showPolicy('terms')">
+                        <span class="sidebar-icon">📄</span>
+                        <span>Terms of Use</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SIDEBAR FOOTER -->
+            <div class="sidebar-footer">
+                <button class="sidebar-footer-btn" onclick="handleLogout()">
+                    <span>🚪</span>
+                    <span>LOGOUT</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="container">
+            <!-- DASHBOARD -->
+            <section id="dash-view" class="view-section active">
+                <div class="dashboard-header">
+                    <div class="business-info-display" id="businessInfoDisplay">🏢 Not Set - Please set in Settings</div>
+                    <h1 class="dashboard-title">Dashboard</h1>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="metric-card teal">
+                        <div class="metric-title">📅 Today's Sales</div>
+                        <div class="metric-value teal" id="todaySales">UGX 0</div>
+                    </div>
+                    <div class="metric-card orange">
+                        <div class="metric-title">🗒️ Weekly Sales</div>
+                        <div class="metric-value orange" id="weeklySales">UGX 0</div>
+                    </div>
+                    <div class="metric-card blue">
+                        <div class="metric-title">📄 Monthly Sales</div>
+                        <div class="metric-value blue" id="monthlySales">UGX 0</div>
+                    </div>
+                    <div class="metric-card green">
+                        <div class="metric-title">🎉 Total Profits</div>
+                        <div class="metric-value green" id="totalProfits">UGX 0</div>
+                    </div>
+                    <div class="metric-card purple">
+                        <div class="metric-title">📰 Total Stock Value</div>
+                        <div class="metric-value purple" id="stockValue">UGX 0</div>
+                    </div>
+                    <div class="metric-card red">
+                        <div class="metric-title">⚠️ Expired Items</div>
+                        <div class="metric-value red" id="expiredCount">0</div>
+                    </div>
+                </div>
+                <div class="table-section">
+                    <div class="table-title">📋 Recent Transactions</div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Receipt #</th>
+                                <th>Date & Time</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Items</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recent-transactions"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- INVENTORY -->
+            <section id="inv-view" class="view-section">
+                <div class="inventory-wrapper">
+                    <div class="left-sidebar-inv no-print">
+                        <!-- ENTRY FORM WITH TABS -->
+                        <div class="form-section">
+                            <!-- Tab Navigation -->
+                            <div class="form-section-tabs">
+                                <div class="form-section-tab active" onclick="switchFormTab('basic')">Product Details</div>
+                            </div>
+
+                            <div class="form-section-content" style="padding: 10px;">
+                                <input type="hidden" id="edit-id">
+
+                                <!-- BASIC INFO TAB -->
+                                <div id="basic-tab" class="form-subsection active">
+                                    <div class="form-subsection-title">📝 Stock Entry Form</div>
+                                    
+                                    <div style="margin-bottom: 8px;">
+                                        <label>Item Name *</label>
+                                        <input type="text" id="itemName" placeholder="e.g. Paracetamol">
+                                    </div>
+
+                                    <div class="form-grid">
+                                        <div>
+                                            <label>Strength <span class="manage-link" onclick="openManager('strengths')">Manage</span></label>
+                                            <select id="sel-strengths"></select>
+                                        </div>
+                                        <div>
+                                            <label>Unit Type <span class="manage-link" onclick="openManager('units')">Manage</span></label>
+                                            <select id="sel-units"></select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-grid">
+                                        <div>
+                                            <label>Brand <span class="manage-link" onclick="openManager('brands')">Manage</span></label>
+                                            <select id="sel-brands"></select>
+                                        </div>
+                                        <div>
+                                            <label>Category <span class="manage-link" onclick="openManager('categories')">Manage</span></label>
+                                            <select id="sel-categories"></select>
+                                        </div>
+                                    </div>
+
+                                    <div class="form-grid">
+                                        <div><label>Batch Number</label><input type="text" id="batch" placeholder="BN-01"></div>
+                                        <div><label>Expiry Date</label><input type="date" id="expiry"></div>
+                                    </div>
+
+                                    <div class="form-grid">
+                                        <div><label>Buying Price</label><input type="number" id="buyPrice" onkeyup="calcLiveProfit()" placeholder="0"></div>
+                                        <div><label>Selling Price</label><input type="number" id="sellPrice" onkeyup="calcLiveProfit()" placeholder="0"></div>
+                                    </div>
+
+                                    <div><label>Stock Quantity</label><input type="number" id="qty" placeholder="0" min="0" style="margin-bottom: 8px;"></div>
+
+                                    <div class="profit-calc">
+                                        <div>Unit Profit: <b id="liveMarkup">0</b> UGX</div>
+                                        <div>Profit Margin: <b id="liveMargin">0</b>%</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- ACTION BUTTONS -->
+                            <div style="padding: 10px; border-top: 1px solid #ddd;">
+                                <div style="display: grid; gap: 6px;">
+                                    <button class="btn btn-teal" onclick="saveStock()">💾 SAVE ITEM</button>
+                                    <button class="btn btn-reset" onclick="resetForm()">♻️ RESET FORM</button>
+                                    <button class="btn" style="background: #666; display: none;" id="cancelEditBtn" onclick="cancelEdit()">❌ CANCEL EDIT</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT CONTENT -->
+                    <div style="flex: 1;">
+                        <!-- STOCK TABLE -->
+                        <div class="stock-available-panel">
+                            <div class="table-header-row">
+                                <span>📊 Stock Available</span>
+                            </div>
+                            <div class="stock-search-reset">
+                                <input type="text" id="search" placeholder="🔍 Search inventory..." onkeyup="renderTable()">
+                                <button class="btn btn-reset" style="width: auto;" onclick="resetStockSearch()">↻ Reset</button>
+                            </div>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Item</th><th>Strength</th><th>Unit</th><th>Brand</th><th>Category</th><th>Batch</th><th>Expiry</th><th>Qty</th><th>Buy</th><th>Sell</th><th>Profit</th><th>Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="stockTable"></tbody>
+                            </table>
+                            <div id="noDataMsg" style="text-align: center; padding: 15px; color: #999; display: none; font-size: 11px;">No items found</div>
+                        </div>
+
+                        <!-- EXPIRED & EXPIRING -->
+                        <div class="history-panel">
+                            <div class="table-header-row">💊 Expired & Expiring (60 Days)</div>
+                            <table style="min-width: 100%; font-size: 11px;">
+                                <thead>
+                                    <tr><th>Item</th><th>Batch</th><th>Expiry Date</th><th>Days Left</th><th>Status</th><th>Action</th></tr>
+                                </thead>
+                                <tbody id="expiredTable"></tbody>
+                            </table>
+                            <div id="noExpiredMsg" style="text-align: center; padding: 15px; color: #999; display: none; font-size: 11px;">No expired or expiring items</div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- HISTORY -->
+            <section id="history-view" class="view-section">
+                <div class="history-container">
+                    <h2 style="color: var(--m-teal); margin-bottom: 15px;">📋 Transaction History</h2>
+                    <div class="history-header">
+                        <button class="history-btn" onclick="viewTransaction()">👁️ VIEW</button>
+                        <button class="history-btn danger" onclick="clearHistory()">🗑️ CLEAR</button>
+                    </div>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Receipt #</th>
+                                <th>Date & Time</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Items Count</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTable"></tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- POS -->
+            <section id="pos-view" class="view-section">
+                <div class="pos-container">
+                    <!-- LEFT: ORDER FORM -->
+                    <div class="pos-left no-print">
+                        <div style="font-size: 14px; font-weight: 900; color: var(--m-teal); margin-bottom: 12px;">📝 CUSTOMER ORDER FORM</div>
+                        <div class="pos-search-reset">
+                            <input type="text" id="posSearch" placeholder="🔍 Search items..." onkeyup="filterPosTable()">
+                            <button class="btn btn-reset" style="width: auto;" onclick="resetPosSearch()">↻ Reset</button>
+                        </div>
+                        <div class="pos-table-wrapper">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead style="background: #f0f0f0; position: sticky; top: 0;">
+                                    <tr style="border-bottom: 2px solid #333;">
+                                        <th style="padding: 8px; text-align: left; font-size: 9px;">Item</th>
+                                        <th style="padding: 8px; text-align: center; font-size: 9px;">Expiry</th>
+                                        <th style="padding: 8px; text-align: center; font-size: 9px;">Qty</th>
+                                        <th style="padding: 8px; text-align: center; font-size: 9px;">Rate</th>
+                                        <th style="padding: 8px; text-align: center; font-size: 9px;">Add</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pos-table-body" style="font-size: 10px;"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- RIGHT: RECEIPT -->
+                    <div class="pos-right">
+                        <div style="text-align: center; border-bottom: 2px solid #333; padding-bottom: 10px; margin-bottom: 12px;">
+                            <div style="font-size: 14px; font-weight: 900;" id="receipt-pharmacy-name">SPIROSOFT PHARMACY</div>
+                            <div style="font-size: 8px; color: #666;" id="receipt-address">Address</div>
+                            <div style="font-size: 8px; color: #666;" id="receipt-tin">TIN: </div>
+                            <div style="font-size: 8px; color: #666; margin-bottom: 8px;" id="receipt-phone">Phone: </div>
+                            
+                            <!-- Receipt Details (Fillable) -->
+                            <div class="receipt-header-info no-print receipt-no-print">
+                                <div><label style="font-size: 8px;">Invoice #:</label> <span id="invoice-display" style="font-weight: bold;">AUTO-GEN</span></div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-top: 5px;">
+                                    <div><label style="font-size: 8px;">Date:</label> <input type="date" id="receipt-date" style="font-size: 8px; padding: 2px; width: 100%;"></div>
+                                    <div><label style="font-size: 8px;">Time:</label> <input type="time" id="receipt-time" style="font-size: 8px; padding: 2px; width: 100%;"></div>
+                                </div>
+                                <div style="margin-top: 5px;"><label style="font-size: 8px;">Casher Name:</label> <input type="text" id="casher-name" placeholder="Casher" style="font-size: 8px; padding: 2px; width: 100%;"></div>
+                            </div>
+
+                            <!-- Receipt Details for Print -->
+                            <div class="receipt-details-print">
+                                <div><b>Invoice #:</b> <span id="invoice-display-print">AUTO-GEN</span></div>
+                                <div><b>Date:</b> <span id="receipt-date-print">06/13/2026</span></div>
+                                <div><b>Time:</b> <span id="receipt-time-print">05:36 PM</span></div>
+                                <div><b>Casher Name:</b> <span id="casher-name-print">Casher</span></div>
+                            </div>
+
+                            <div class="receipt-divider"></div>
+
+                            <!-- Customer Details (Fillable) -->
+                            <div class="receipt-header-info no-print receipt-no-print">
+                                <div><label style="font-size: 8px;">Customer Name:</label> <input type="text" id="customer-name" placeholder="Customer" style="font-size: 8px; padding: 2px; width: 100%;"></div>
+                                <div><label style="font-size: 8px;">Location:</label> <input type="text" id="customer-location" placeholder="Location" style="font-size: 8px; padding: 2px; width: 100%;"></div>
+                            </div>
+
+                            <!-- Customer Details for Print -->
+                            <div class="receipt-details-print">
+                                <div><b>Customer Name:</b> <span id="customer-name-print">Customer</span></div>
+                                <div><b>Location:</b> <span id="customer-location-print">Location</span></div>
+                            </div>
+
+                            <div class="receipt-divider"></div>
+                        </div>
+
+                        <!-- ITEMS TABLE -->
+                        <table id="itemsTable" style="font-size: 9px; width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+                            <thead>
+                                <tr style="border-bottom: 1px solid #000;">
+                                    <th style="width: 4%; text-align: left; padding: 3px;">#</th>
+                                    <th style="width: 25%; text-align: left; padding: 3px;">Item + Strength</th>
+                                    <th style="width: 10%; text-align: center; padding: 3px;">Batch</th>
+                                    <th style="width: 10%; text-align: center; padding: 3px;">Expiry</th>
+                                    <th style="width: 8%; text-align: center; padding: 3px;">Rate</th>
+                                    <th style="width: 8%; text-align: center; padding: 3px;">QTY</th>
+                                    <th style="width: 18%; text-align: right; padding: 3px;">Amount</th>
+                                    <th style="width: 12%; text-align: center; padding: 3px;" class="no-print">Del</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+
+                        <!-- TOTALS & BUTTONS -->
+                        <div style="border-top: 2px solid #000; padding-top: 10px;">
+                            <div style="display: flex; justify-content: space-between; font-weight: 900; margin-bottom: 5px; font-size: 10px;">
+                                <span>TOTAL (Figures):</span>
+                                <span>UGX <span id="totalFigure">0</span></span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-weight: 900; margin-bottom: 10px; font-size: 9px;">
+                                <span>TOTAL (Words):</span>
+                                <span id="totalWords" style="text-transform: uppercase;">ZERO</span>
+                            </div>
+                            <div style="font-size: 7px; line-height: 1.3; margin-bottom: 10px; border-top: 1px dashed #000; padding-top: 5px;">Goods once sold are not returned back.</div>
+                            <div style="display: flex; gap: 8px;" class="no-print">
+                                <button class="btn btn-teal" style="flex: 1; background: #10b981;" onclick="completeSale()">✅ SALE</button>
+                                <button class="btn btn-teal" style="flex: 1; background: #3b82f6;" onclick="printReceipt()">🖨️ PRINT</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BACKUP -->
+            <section id="backup-view" class="view-section">
+                <div class="coming-soon-container">
+                    <div class="coming-soon-icon">💾</div>
+                    <h2>Backup System</h2>
+                    <p>Coming Soon</p>
+                </div>
+            </section>
+
+            <!-- SETTINGS -->
+            <section id="settings-view" class="view-section">
+                <div class="settings-container">
+                    <h2 style="color: var(--m-teal); margin-bottom: 20px;">⚙️ Settings</h2>
+                    <div class="settings-tabs">
+                        <button class="settings-tab active" onclick="switchSettingsTab('business')">🏢 Business</button>
+                        <button class="settings-tab" onclick="switchSettingsTab('account')">👤 Account</button>
+                    </div>
+
+                    <div id="business-tab" class="settings-tab-content active">
+                        <div class="settings-section">
+                            <h3>Business Information</h3>
+                            <div class="settings-row">
+                                <div class="settings-input-group">
+                                    <label>Business Name</label>
+                                    <input type="text" id="businessNameInput">
+                                </div>
+                                <div class="settings-input-group">
+                                    <label>TIN Number</label>
+                                    <input type="text" id="tinInput">
+                                </div>
+                            </div>
+                            <div class="settings-row">
+                                <div class="settings-input-group">
+                                    <label>Address</label>
+                                    <input type="text" id="addressInput">
+                                </div>
+                                <div class="settings-input-group">
+                                    <label>Phone</label>
+                                    <input type="tel" id="phoneInput">
+                                </div>
+                            </div>
+                            <button class="settings-button" onclick="saveBusinessSettings()">💾 Save</button>
+                            <div id="businessSuccess" style="color: #27ae60; font-size: 11px; margin-top: 8px; display: none;">✅ Saved!</div>
+                        </div>
+                    </div>
+
+                    <div id="account-tab" class="settings-tab-content">
+                        <div class="settings-section">
+                            <h3>Account Information</h3>
+                            <div class="settings-row">
+                                <div class="settings-input-group">
+                                    <label>Username</label>
+                                    <input type="text" id="settingsUsername" readonly>
+                                </div>
+                                <div class="settings-input-group">
+                                    <label>Email</label>
+                                    <input type="email" id="settingsEmail" readonly>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="settings-section">
+                            <h3>Change Password</h3>
+                            <div class="settings-row" style="grid-template-columns: 1fr;">
+                                <div class="settings-input-group">
+                                    <label>Current Password</label>
+                                    <input type="password" id="currentPassword">
+                                </div>
+                            </div>
+                            <div class="settings-row" style="grid-template-columns: 1fr;">
+                                <div class="settings-input-group">
+                                    <label>New Password</label>
+                                    <input type="password" id="newPassword">
+                                </div>
+                            </div>
+                            <button class="settings-button" onclick="changePassword()">🔐 Change</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal" id="forgotPasswordModal">
+    <div class="modal-box">
+        <div class="modal-header">
+            <span>🔑 Reset Password</span>
+            <button class="modal-close" onclick="closeModal('forgotPasswordModal')">×</button>
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label style="font-size: 11px; font-weight: 900; display: block; margin-bottom: 8px;">Enter email to receive reset link:</label>
+            <input type="email" id="resetEmail" placeholder="your@email.com" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+        </div>
+        <button onclick="sendResetLink()" style="width: 100%; padding: 10px; background: var(--m-teal); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 900;">📧 Send Reset Link</button>
+        <div id="resetMessage" style="margin-top: 10px; font-size: 11px; display: none;"></div>
+    </div>
+</div>
+
+<div class="modal" id="policyModal">
+    <div class="modal-box policy-modal">
+        <div class="modal-header">
+            <span id="policyTitle">Policy</span>
+            <button class="modal-close" onclick="closeModal('policyModal')">×</button>
+        </div>
+        <div class="policy-content" id="policyContent"></div>
+    </div>
+</div>
+
+<div class="modal" id="setupModal">
+    <div class="modal-box">
+        <h3 id="modalTitle">Manage</h3>
+        <div style="display:flex; gap:5px; margin-bottom: 10px;">
+            <input type="text" id="newOption" placeholder="Add...">
+            <button class="btn btn-teal" onclick="addNewOption()" style="width: auto;">ADD</button>
+        </div>
+        <div id="modalList" style="max-height:200px; overflow-y:auto; border:1px solid #eee; border-radius: 3px;"></div>
+        <button class="btn btn-reset" style="width: 100%; margin-top: 15px;" onclick="closeManager()">CLOSE</button>
+    </div>
+</div>
+
+<!-- CALCULATOR MODAL -->
+<div class="modal" id="calculatorModal">
+    <div class="modal-box calculator-modal">
+        <div class="modal-header">
+            <span>🧮 Calculator</span>
+            <button class="modal-close" onclick="closeModal('calculatorModal')">×</button>
+        </div>
+        <div class="calc-display" id="calcDisplay">0</div>
+        <div class="calc-buttons">
+            <button class="calc-btn clear" onclick="calcClear()">C</button>
+            <button class="calc-btn operator" onclick="calcAppend('/')">÷</button>
+            <button class="calc-btn operator" onclick="calcAppend('*')">×</button>
+            <button class="calc-btn" onclick="calcAppend('7')">7</button>
+            <button class="calc-btn" onclick="calcAppend('8')">8</button>
+            <button class="calc-btn" onclick="calcAppend('9')">9</button>
+            <button class="calc-btn operator" onclick="calcAppend('-')">−</button>
+            <button class="calc-btn" onclick="calcAppend('4')">4</button>
+            <button class="calc-btn" onclick="calcAppend('5')">5</button>
+            <button class="calc-btn" onclick="calcAppend('6')">6</button>
+            <button class="calc-btn operator" onclick="calcAppend('+')">+</button>
+            <button class="calc-btn" onclick="calcAppend('1')">1</button>
+            <button class="calc-btn" onclick="calcAppend('2')">2</button>
+            <button class="calc-btn" onclick="calcAppend('3')">3</button>
+            <button class="calc-btn operator" onclick="calcAppend('.')">.</button>
+            <button class="calc-btn" onclick="calcAppend('0')">0</button>
+            <button class="calc-btn equals" onclick="calcEquals()">=</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const exampleSettings = { 
+        brands: ['GSK', 'COSMOS', 'CIPLA', 'SANOFI'], 
+        categories: ['Analgesics', 'Antibiotics', 'Antimalarials', 'Vitamins'], 
+        strengths: ['250mg', '500mg', '1g', '5ml', '10ml', '20mg', '40mg'], 
+        units: ['Tablets', 'Capsules', 'Syrup', 'Vials', 'Ampoules', 'Creams'] 
+    };
+
+    let users = JSON.parse(localStorage.getItem('users')) || [];
+    let currentUser = JSON.parse(localStorage.getItem('currentUser')) || null;
+    let inventory = JSON.parse(localStorage.getItem('spiro_inv_master')) || [];
+    let transactionHistory = JSON.parse(localStorage.getItem('transactionHistory')) || [];
+    let businessSettings = JSON.parse(localStorage.getItem('businessSettings')) || { name: 'Not Set', tin: '', address: '', phone: '' };
+    let settings = JSON.parse(localStorage.getItem('spiro_settings')) || exampleSettings;
+    let editingItemId = null;
+    let activeType = '';
+    let cartItems = [];
+    let invoiceCounter = parseInt(localStorage.getItem('invoiceCounter')) || 1000;
+
+    // Calculator variables
+    let calcDisplay = '0';
+    let calcPrev = '';
+    let calcCurrent = '';
+    let calcOperation = null;
+
+    if (!settings || !settings.strengths || settings.strengths.length === 0) {
+        settings = JSON.parse(JSON.stringify(exampleSettings));
+        localStorage.setItem('spiro_settings', JSON.stringify(settings));
+    }
+
+    // Calculator Functions
+    function openCalculator() {
+        calcDisplay = '0';
+        calcPrev = '';
+        calcCurrent = '';
+        calcOperation = null;
+        document.getElementById('calcDisplay').textContent = '0';
+        document.getElementById('calculatorModal').classList.add('active');
+    }
+
+    function calcAppend(value) {
+        const display = document.getElementById('calcDisplay');
+        if (value === '.') {
+            if (!calcCurrent.includes('.')) {
+                calcCurrent += value;
+                display.textContent = calcCurrent || '0';
+            }
+        } else if (['+', '-', '*', '/'].includes(value)) {
+            if (calcCurrent !== '') {
+                if (calcPrev !== '' && calcOperation) {
+                    calcPerform();
+                }
+                calcPrev = calcCurrent;
+                calcOperation = value;
+                calcCurrent = '';
+            }
+        } else {
+            calcCurrent += value;
+            display.textContent = calcCurrent;
+        }
+    }
+
+    function calcClear() {
+        calcDisplay = '0';
+        calcPrev = '';
+        calcCurrent = '';
+        calcOperation = null;
+        document.getElementById('calcDisplay').textContent = '0';
+    }
+
+    function calcPerform() {
+        if (calcPrev !== '' && calcCurrent !== '' && calcOperation) {
+            let result = 0;
+            const prev = parseFloat(calcPrev);
+            const current = parseFloat(calcCurrent);
+            
+            switch(calcOperation) {
+                case '+': result = prev + current; break;
+                case '-': result = prev - current; break;
+                case '*': result = prev * current; break;
+                case '/': result = current !== 0 ? prev / current : 0; break;
+            }
+            
+            calcCurrent = result.toString();
+            calcPrev = '';
+            calcOperation = null;
+            document.getElementById('calcDisplay').textContent = calcCurrent;
+        }
+    }
+
+    function calcEquals() {
+        calcPerform();
+    }
+
+    function numberToWords(num) {
+        if (num === 0) return 'ZERO SHILLINGS';
+        const ones = ['', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE'];
+        const teens = ['TEN', 'ELEVEN', 'TWELVE', 'THIRTEEN', 'FOURTEEN', 'FIFTEEN', 'SIXTEEN', 'SEVENTEEN', 'EIGHTEEN', 'NINETEEN'];
+        const tens = ['', '', 'TWENTY', 'THIRTY', 'FORTY', 'FIFTY', 'SIXTY', 'SEVENTY', 'EIGHTY', 'NINETY'];
+        const scale = ['', 'THOUSAND', 'MILLION', 'BILLION', 'TRILLION'];
+        let words = '';
+        let scaleIndex = 0;
+        while (num > 0) {
+            let chunk = num % 1000;
+            if (chunk !== 0) {
+                let chunkWords = '';
+                if (chunk >= 100) {
+                    chunkWords = ones[Math.floor(chunk / 100)] + ' HUNDRED';
+                    chunk %= 100;
+                    if (chunk > 0) chunkWords += ' ';
+                }
+                if (chunk >= 20) {
+                    chunkWords += tens[Math.floor(chunk / 10)];
+                    chunk %= 10;
+                    if (chunk > 0) chunkWords += ' ';
+                }
+                if (chunk >= 10) {
+                    chunkWords += teens[chunk - 10];
+                } else if (chunk > 0) {
+                    chunkWords += ones[chunk];
+                }
+                if (scaleIndex > 0) {
+                    chunkWords += ' ' + scale[scaleIndex];
+                }
+                words = chunkWords + (words ? ' ' + words : '');
+            }
+            num = Math.floor(num / 1000);
+            scaleIndex++;
+        }
+        return words.trim() + ' SHILLINGS';
+    }
+
+    function switchAuthTab(tab) {
+        document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(tab + 'Form').classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function toggleLoginPassword() { const i = document.getElementById('loginPassword'); i.type = i.type === 'password' ? 'text' : 'password'; }
+    function toggleSignupPassword() { const i = document.getElementById('signupPassword'); i.type = i.type === 'password' ? 'text' : 'password'; }
+    function toggleConfirmPassword() { const i = document.getElementById('confirmPassword'); i.type = i.type === 'password' ? 'text' : 'password'; }
+
+    function handleSignup(event) {
+        event.preventDefault();
+        const email = document.getElementById('signupEmail').value;
+        const username = document.getElementById('signupUsername').value;
+        const password = document.getElementById('signupPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+        const errorDiv = document.getElementById('signupError');
+        const successDiv = document.getElementById('signupSuccess');
+        errorDiv.style.display = 'none';
+        successDiv.style.display = 'none';
+        if (password !== confirmPassword) {
+            errorDiv.textContent = '❌ Passwords do not match';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        if (users.find(u => u.email === email)) {
+            errorDiv.textContent = '❌ Email already registered';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        users.push({ email, username, password });
+        localStorage.setItem('users', JSON.stringify(users));
+        successDiv.textContent = '✅ Account created! Login now';
+        successDiv.style.display = 'block';
+        setTimeout(() => switchAuthTab('login'), 2000);
+    }
+
+    function handleLogin(event) {
+        event.preventDefault();
+        const username = document.getElementById('loginUsername').value;
+        const password = document.getElementById('loginPassword').value;
+        const errorDiv = document.getElementById('loginError');
+        errorDiv.style.display = 'none';
+        const user = users.find(u => u.username === username && u.password === password);
+        if (!user) {
+            errorDiv.textContent = '❌ Invalid username or password';
+            errorDiv.style.display = 'block';
+            return;
+        }
+        currentUser = { username: user.username, email: user.email };
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        if (document.getElementById('rememberMe').checked) {
+            localStorage.setItem('rememberMe', JSON.stringify({ username, password }));
+        }
+        showApp();
+    }
+
+    function handleLogout() {
+        if (confirm('Logout?')) {
+            currentUser = null;
+            localStorage.removeItem('currentUser');
+            document.getElementById('appWrapper').classList.add('hidden');
+            document.getElementById('authWrapper').classList.remove('hidden');
+        }
+    }
+
+    function showForgotPasswordModal() {
+        document.getElementById('forgotPasswordModal').classList.add('active');
+    }
+
+    function sendResetLink() {
+        const email = document.getElementById('resetEmail').value;
+        const messageDiv = document.getElementById('resetMessage');
+        const user = users.find(u => u.email === email);
+        if (!user) {
+            messageDiv.innerHTML = '❌ Email not found';
+            messageDiv.style.color = '#e74c3c';
+            messageDiv.style.display = 'block';
+            return;
+        }
+        const tempPassword = Math.random().toString(36).slice(-8).toUpperCase();
+        user.tempPassword = tempPassword;
+        localStorage.setItem('users', JSON.stringify(users));
+        messageDiv.innerHTML = `✅ Reset link sent to ${email}<br><strong>Temporary Password: ${tempPassword}</strong><br>Use this to login and change password`;
+        messageDiv.style.color = '#27ae60';
+        messageDiv.style.display = 'block';
+    }
+
+    function showPolicy(type) {
+        const modal = document.getElementById('policyModal');
+        const content = document.getElementById('policyContent');
+        const title = document.getElementById('policyTitle');
+        if (type === 'privacy') {
+            title.textContent = '🔒 Privacy Policy';
+            content.innerHTML = `
+                <div class="policy-section"><h3>1. Information Collection</h3><p>We collect email, username, and business data you provide during registration and usage.</p></div>
+                <div class="policy-section"><h3>2. Data Usage</h3><p>Data is used to provide pharmacy management services and send password reset links.</p></div>
+                <div class="policy-section"><h3>3. Data Security</h3><p>Your data is protected using secure storage methods.</p></div>
+                <div class="policy-section"><h3>4. Contact</h3><p>info@spirosoft.com</p></div>
+            `;
+        } else {
+            title.textContent = '📄 Terms of Use';
+            content.innerHTML = `
+                <div class="policy-section"><h3>1. Agreement</h3><p>By using SPIROSOFT ERP, you agree to these terms.</p></div>
+                <div class="policy-section"><h3>2. User Responsibility</h3><p>You are responsible for account security and legal use of the service.</p></div>
+                <div class="policy-section"><h3>3. Service Provision</h3><p>We provide pharmacy management tools for business operations.</p></div>
+                <div class="policy-section"><h3>4. Limitation</h3><p>We provide the service as-is without warranties.</p></div>
+            `;
+        }
+        modal.classList.add('active');
+    }
+
+    function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+    function showApp() {
+        document.getElementById('authWrapper').classList.add('hidden');
+        document.getElementById('appWrapper').classList.remove('hidden');
+        document.getElementById('loggedInUser').textContent = `👤 ${currentUser.username}`;
+        document.getElementById('settingsUsername').value = currentUser.username;
+        document.getElementById('settingsEmail').value = currentUser.email;
+        initializeApp();
+    }
+
+    function initializeApp() {
+        document.getElementById('businessNameInput').value = businessSettings.name || '';
+        document.getElementById('tinInput').value = businessSettings.tin || '';
+        document.getElementById('addressInput').value = businessSettings.address || '';
+        document.getElementById('phoneInput').value = businessSettings.phone || '';
+        updateBusinessDisplay();
+        updateDropdowns();
+        renderStockTable();
+        renderPosTable();
+        renderHistory();
+        renderTransactions();
+        updateDashboard();
+        generateInvoiceNumber();
+        setCurrentDateTime();
+    }
+
+    function updateDropdowns() { 
+        const types = ['brands', 'categories', 'strengths', 'units'];
+        types.forEach(type => {
+            const el = document.getElementById('sel-' + type);
+            if (el) {
+                el.innerHTML = '<option value="">Select</option>' + settings[type].map(opt => `<option value="${opt}">${opt}</option>`).join('');
+            }
+        });
+    }
+
+    function updateBusinessDisplay() {
+        const display = document.getElementById('businessInfoDisplay');
+        if (businessSettings.name && businessSettings.name !== 'Not Set') {
+            display.textContent = '🏢 ' + businessSettings.name;
+            document.getElementById('receipt-pharmacy-name').textContent = businessSettings.name;
+        }
+        document.getElementById('receipt-address').textContent = businessSettings.address || 'Address';
+        document.getElementById('receipt-tin').textContent = 'TIN: ' + (businessSettings.tin || 'N/A');
+        document.getElementById('receipt-phone').textContent = 'Phone: ' + (businessSettings.phone || 'N/A');
+    }
+
+    function saveBusinessSettings() {
+        businessSettings = {
+            name: document.getElementById('businessNameInput').value || 'Not Set',
+            tin: document.getElementById('tinInput').value || '',
+            address: document.getElementById('addressInput').value || '',
+            phone: document.getElementById('phoneInput').value || ''
+        };
+        localStorage.setItem('businessSettings', JSON.stringify(businessSettings));
+        updateBusinessDisplay();
+        document.getElementById('businessSuccess').style.display = 'block';
+        setTimeout(() => { document.getElementById('businessSuccess').style.display = 'none'; }, 2000);
+    }
+
+    function switchSettingsTab(tab) {
+        document.querySelectorAll('.settings-tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(tab + '-tab').classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function changePassword() {
+        const current = document.getElementById('currentPassword').value;
+        const newPass = document.getElementById('newPassword').value;
+        const user = users.find(u => u.username === currentUser.username);
+        if (user.password !== current) {
+            alert('❌ Current password is incorrect');
+            return;
+        }
+        user.password = newPass;
+        localStorage.setItem('users', JSON.stringify(users));
+        alert('✅ Password changed successfully');
+        document.getElementById('currentPassword').value = '';
+        document.getElementById('newPassword').value = '';
+    }
+
+    function saveStock() {
+        const itemName = document.getElementById('itemName').value;
+        const strength = document.getElementById('sel-strengths').value;
+        const unit = document.getElementById('sel-units').value;
+        const brand = document.getElementById('sel-brands').value;
+        const category = document.getElementById('sel-categories').value;
+        const batch = document.getElementById('batch').value;
+        const expiry = document.getElementById('expiry').value;
+        const buyPrice = parseFloat(document.getElementById('buyPrice').value) || 0;
+        const sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
+        const qty = parseInt(document.getElementById('qty').value) || 0;
+
+        if (!itemName) {
+            alert('❌ Please enter item name');
+            return;
+        }
+
+        const item = {
+            id: editingItemId || Date.now(),
+            itemName, strength, unit, brand, category, batch, expiry,
+            buyPrice, sellPrice, qty, profit: sellPrice - buyPrice
+        };
+
+        if (editingItemId) {
+            inventory = inventory.map(i => i.id === editingItemId ? item : i);
+            editingItemId = null;
+            document.getElementById('cancelEditBtn').style.display = 'none';
+        } else {
+            inventory.push(item);
+        }
+
+        localStorage.setItem('spiro_inv_master', JSON.stringify(inventory));
+        resetForm();
+        renderStockTable();
+        renderPosTable();
+        alert('✅ Item saved successfully');
+    }
+
+    function resetForm() {
+        document.getElementById('itemName').value = '';
+        document.getElementById('sel-strengths').value = '';
+        document.getElementById('sel-units').value = '';
+        document.getElementById('sel-brands').value = '';
+        document.getElementById('sel-categories').value = '';
+        document.getElementById('batch').value = '';
+        document.getElementById('expiry').value = '';
+        document.getElementById('buyPrice').value = '';
+        document.getElementById('sellPrice').value = '';
+        document.getElementById('qty').value = '';
+        document.getElementById('liveMarkup').textContent = '0';
+        document.getElementById('liveMargin').textContent = '0';
+        editingItemId = null;
+        document.getElementById('cancelEditBtn').style.display = 'none';
+    }
+
+    function calcLiveProfit() {
+        const buyPrice = parseFloat(document.getElementById('buyPrice').value) || 0;
+        const sellPrice = parseFloat(document.getElementById('sellPrice').value) || 0;
+        const profit = sellPrice - buyPrice;
+        const margin = buyPrice > 0 ? ((profit / buyPrice) * 100).toFixed(2) : 0;
+        document.getElementById('liveMarkup').textContent = profit.toFixed(2);
+        document.getElementById('liveMargin').textContent = margin;
+    }
+
+    function editStock(id) {
+        const item = inventory.find(i => i.id === id);
+        if (item) {
+            document.getElementById('itemName').value = item.itemName;
+            document.getElementById('sel-strengths').value = item.strength;
+            document.getElementById('sel-units').value = item.unit;
+            document.getElementById('sel-brands').value = item.brand;
+            document.getElementById('sel-categories').value = item.category;
+            document.getElementById('batch').value = item.batch;
+            document.getElementById('expiry').value = item.expiry;
+            document.getElementById('buyPrice').value = item.buyPrice;
+            document.getElementById('sellPrice').value = item.sellPrice;
+            document.getElementById('qty').value = item.qty;
+            editingItemId = id;
+            document.getElementById('cancelEditBtn').style.display = 'block';
+            calcLiveProfit();
+        }
+    }
+
+    function cancelEdit() {
+        resetForm();
+    }
+
+    function deleteStock(id) {
+        if (confirm('Are you sure you want to delete this item?')) {
+            inventory = inventory.filter(i => i.id !== id);
+            localStorage.setItem('spiro_inv_master', JSON.stringify(inventory));
+            renderStockTable();
+            renderPosTable();
+        }
+    }
+
+    function renderStockTable() {
+        const search = document.getElementById('search').value.toLowerCase();
+        const tbody = document.getElementById('stockTable');
+        tbody.innerHTML = '';
+        const filtered = inventory.filter(i => i.itemName.toLowerCase().includes(search));
+        
+        if (filtered.length === 0) {
+            document.getElementById('noDataMsg').style.display = 'block';
+            return;
+        }
+        document.getElementById('noDataMsg').style.display = 'none';
+        
+        filtered.forEach(item => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.itemName}</td>
+                <td>${item.strength}</td>
+                <td>${item.unit}</td>
+                <td>${item.brand}</td>
+                <td>${item.category}</td>
+                <td>${item.batch}</td>
+                <td>${item.expiry}</td>
+                <td>${item.qty}</td>
+                <td>${item.buyPrice}</td>
+                <td>${item.sellPrice}</td>
+                <td>${(item.sellPrice - item.buyPrice).toFixed(2)}</td>
+                <td><button class="btn btn-edit" onclick="editStock(${item.id})">Edit</button> <button class="btn btn-delete" onclick="deleteStock(${item.id})">Delete</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function resetStockSearch() {
+        document.getElementById('search').value = '';
+        renderStockTable();
+    }
+
+    function renderPosTable() {
+        const tbody = document.getElementById('pos-table-body');
+        tbody.innerHTML = '';
+        inventory.forEach((item, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${item.itemName} (${item.strength})</td>
+                <td style="text-align: center;">${item.expiry}</td>
+                <td style="text-align: center;">${item.qty}</td>
+                <td style="text-align: center;">${item.sellPrice}</td>
+                <td style="text-align: center;"><button class="btn btn-teal" style="width: auto; padding: 3px 8px; font-size: 8px;" onclick="addToCart(${item.id})">Add</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function filterPosTable() {
+        const search = document.getElementById('posSearch').value.toLowerCase();
+        const rows = document.querySelectorAll('#pos-table-body tr');
+        rows.forEach(row => {
+            const text = row.textContent.toLowerCase();
+            row.style.display = text.includes(search) ? '' : 'none';
+        });
+    }
+
+    function resetPosSearch() {
+        document.getElementById('posSearch').value = '';
+        filterPosTable();
+    }
+
+    function addToCart(itemId) {
+        const item = inventory.find(i => i.id === itemId);
+        if (!item) return;
+        
+        const qty = prompt(`Enter quantity for ${item.itemName}:`);
+        if (!qty || isNaN(qty) || qty <= 0) return;
+        
+        const cartItem = {
+            id: itemId,
+            itemName: item.itemName,
+            strength: item.strength,
+            batch: item.batch,
+            expiry: item.expiry,
+            rate: item.sellPrice,
+            qty: parseInt(qty),
+            amount: item.sellPrice * parseInt(qty)
+        };
+        
+        cartItems.push(cartItem);
+        renderCartTable();
+        updateTotal();
+    }
+
+    function renderCartTable() {
+        const tbody = document.querySelector('#itemsTable tbody');
+        tbody.innerHTML = '';
+        cartItems.forEach((item, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="width: 4%; text-align: left; padding: 3px;">${idx + 1}</td>
+                <td style="width: 25%; text-align: left; padding: 3px;">${item.itemName} ${item.strength}</td>
+                <td style="width: 10%; text-align: center; padding: 3px;">${item.batch}</td>
+                <td style="width: 10%; text-align: center; padding: 3px;">${item.expiry}</td>
+                <td style="width: 8%; text-align: center; padding: 3px;">${item.rate}</td>
+                <td style="width: 8%; text-align: center; padding: 3px;">${item.qty}</td>
+                <td style="width: 18%; text-align: right; padding: 3px;">${item.amount}</td>
+                <td style="width: 12%; text-align: center; padding: 3px;" class="no-print"><button class="btn btn-delete" style="padding: 3px 6px; font-size: 7px;" onclick="removeFromCart(${idx})">Remove</button></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function removeFromCart(idx) {
+        cartItems.splice(idx, 1);
+        renderCartTable();
+        updateTotal();
+    }
+
+    function updateTotal() {
+        const total = cartItems.reduce((sum, item) => sum + item.amount, 0);
+        document.getElementById('totalFigure').textContent = total.toFixed(2);
+        document.getElementById('totalWords').textContent = numberToWords(Math.floor(total));
+    }
+
+    function completeSale() {
+        if (cartItems.length === 0) {
+            alert('❌ Cart is empty');
+            return;
+        }
+        
+        const total = cartItems.reduce((sum, item) => sum + item.amount, 0);
+        const receipt = {
+            receiptNo: invoiceCounter++,
+            date: new Date().toLocaleDateString(),
+            time: new Date().toLocaleTimeString(),
+            customer: document.getElementById('customer-name').value || 'Walk-in',
+            amount: total,
+            items: cartItems.length
+        };
+        
+        transactionHistory.push(receipt);
+        localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory));
+        localStorage.setItem('invoiceCounter', invoiceCounter);
+        
+        alert('✅ Sale completed!');
+        cartItems = [];
+        renderCartTable();
+        updateTotal();
+        generateInvoiceNumber();
+        setCurrentDateTime();
+    }
+
+    function printReceipt() {
+        window.print();
+    }
+
+    function renderHistory() {
+        const tbody = document.getElementById('historyTable');
+        tbody.innerHTML = '';
+        transactionHistory.forEach(transaction => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${transaction.receiptNo}</td>
+                <td>${transaction.date} ${transaction.time}</td>
+                <td>${transaction.customer}</td>
+                <td>UGX ${transaction.amount.toFixed(2)}</td>
+                <td>${transaction.items}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function viewTransaction() {
+        alert('View functionality - Click on transaction row to view details');
+    }
+
+    function clearHistory() {
+        if (confirm('Are you sure you want to clear all transaction history?')) {
+            transactionHistory = [];
+            localStorage.setItem('transactionHistory', JSON.stringify(transactionHistory));
+            renderHistory();
+        }
+    }
+
+    function renderTransactions() {
+        const tbody = document.getElementById('recent-transactions');
+        tbody.innerHTML = '';
+        const recent = transactionHistory.slice(-5).reverse();
+        recent.forEach(transaction => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${transaction.receiptNo}</td>
+                <td>${transaction.date} ${transaction.time}</td>
+                <td>${transaction.customer}</td>
+                <td>UGX ${transaction.amount.toFixed(2)}</td>
+                <td>${transaction.items}</td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function updateDashboard() {
+        const today = new Date().toLocaleDateString();
+        const todayTransactions = transactionHistory.filter(t => t.date === today);
+        const todaySales = todayTransactions.reduce((sum, t) => sum + t.amount, 0);
+        document.getElementById('todaySales').textContent = 'UGX ' + todaySales.toFixed(2);
+        
+        const totalSales = transactionHistory.reduce((sum, t) => sum + t.amount, 0);
+        document.getElementById('weeklySales').textContent = 'UGX ' + totalSales.toFixed(2);
+        document.getElementById('monthlySales').textContent = 'UGX ' + totalSales.toFixed(2);
+        
+        const totalProfit = inventory.reduce((sum, item) => sum + (item.profit * item.qty), 0);
+        document.getElementById('totalProfits').textContent = 'UGX ' + totalProfit.toFixed(2);
+        
+        const stockValue = inventory.reduce((sum, item) => sum + (item.buyPrice * item.qty), 0);
+        document.getElementById('stockValue').textContent = 'UGX ' + stockValue.toFixed(2);
+        
+        const expiredCount = inventory.filter(item => {
+            if (!item.expiry) return false;
+            const expireDate = new Date(item.expiry);
+            return expireDate < new Date();
+        }).length;
+        document.getElementById('expiredCount').textContent = expiredCount;
+    }
+
+    function generateInvoiceNumber() {
+        document.getElementById('invoice-display').textContent = invoiceCounter;
+        document.getElementById('invoice-display-print').textContent = invoiceCounter;
+    }
+
+    function setCurrentDateTime() {
+        const now = new Date();
+        const date = now.toISOString().split('T')[0];
+        const time = now.toTimeString().slice(0, 5);
+        document.getElementById('receipt-date').value = date;
+        document.getElementById('receipt-date-print').textContent = now.toLocaleDateString();
+        document.getElementById('receipt-time').value = time;
+        document.getElementById('receipt-time-print').textContent = now.toLocaleTimeString();
+    }
+
+    function switchFormTab(tab) {
+        document.querySelectorAll('.form-subsection').forEach(f => f.classList.remove('active'));
+        document.querySelectorAll('.form-section-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(tab + '-tab').classList.add('active');
+        event.target.classList.add('active');
+    }
+
+    function openManager(type) {
+        activeType = type;
+        const modal = document.getElementById('setupModal');
+        document.getElementById('modalTitle').textContent = 'Manage ' + type.charAt(0).toUpperCase() + type.slice(1);
+        const list = document.getElementById('modalList');
+        list.innerHTML = '';
+        settings[type].forEach((item, idx) => {
+            const div = document.createElement('div');
+            div.style.cssText = 'padding: 8px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;';
+            div.innerHTML = `<span>${item}</span><button class="btn btn-delete" style="padding: 3px 6px; font-size: 7px;" onclick="removeOption(${idx})">Delete</button>`;
+            list.appendChild(div);
+        });
+        modal.classList.add('active');
+    }
+
+    function addNewOption() {
+        const input = document.getElementById('newOption');
+        const value = input.value.trim();
+        if (!value) {
+            alert('❌ Please enter a value');
+            return;
+        }
+        settings[activeType].push(value);
+        localStorage.setItem('spiro_settings', JSON.stringify(settings));
+        input.value = '';
+        updateDropdowns();
+        openManager(activeType);
+    }
+
+    function removeOption(idx) {
+        settings[activeType].splice(idx, 1);
+        localStorage.setItem('spiro_settings', JSON.stringify(settings));
+        updateDropdowns();
+        openManager(activeType);
+    }
+
+    function closeManager() {
+        document.getElementById('setupModal').classList.remove('active');
+    }
+
+    function showView(viewId, element) {
+        document.querySelectorAll('.view-section').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.sidebar-item').forEach(s => s.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
+        element.classList.add('active');
+    }
+
+    // Initialize on page load
+    window.addEventListener('load', () => {
+        const rememberMe = JSON.parse(localStorage.getItem('rememberMe')) || null;
+        if (rememberMe && currentUser) {
+            showApp();
+        }
+    });
+</script>
+</body>
+</html>
